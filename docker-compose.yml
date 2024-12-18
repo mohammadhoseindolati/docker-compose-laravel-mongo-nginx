@@ -1,0 +1,48 @@
+version: '3.3'
+services:
+  #PHP Service
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: php
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./www:/var/www
+    environment:
+      - PHP_MEMORY_LIMIT=2048M
+    networks:
+      - app_network
+  #Nginx Service
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./www:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - app_network
+  #mongodb Service
+  mongodb:
+    image: docker.io/bitnami/mongodb:latest
+    restart: unless-stopped
+    container_name: mongodb
+    volumes:
+      - ./mongo/data:/bitnami/mongodb
+    ports:
+      - 27017:27017
+    environment:
+      MONGODB_PORT_NUMBER: 27017
+      MONGODB_ADVERTISED_HOSTNAME: mongodb
+      MONGODB_ROOT_USERNAME: root
+      MONGODB_ROOT_PASSWORD: password123
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
